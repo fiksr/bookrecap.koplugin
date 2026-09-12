@@ -10,8 +10,8 @@ local Settings = {}
 Settings.__index = Settings
 
 local DEFAULT_MODELS = {
-    groq = "llama-3.3-70b-versatile",
-    gemini = "gemini-1.5-flash",
+    groq = "openai/gpt-oss-120b",
+    gemini = "gemini-3.5-flash-lite",
     openai = "gpt-4o-mini",
     deepseek = "deepseek-chat",
     ollama = "llama3.2",
@@ -42,12 +42,40 @@ function Settings:setProvider(p)
     self:save("provider", p)
 end
 
-function Settings:getApiKey()
-    return self:get("api_key", "")
+local function detectProviderForKey(key)
+    if key:sub(1, 4) == "gsk_" then
+        return "groq"
+    elseif key:sub(1, 4) == "AIza" then
+        return "gemini"
+    elseif key:sub(1, 3) == "sk-" then
+        return "openai"
+    end
+    return nil
 end
 
-function Settings:setApiKey(key)
-    self:save("api_key", key)
+function Settings:getApiKey(prov)
+    prov = prov or self:getProvider()
+    local val = self:get("api_key_" .. prov, "")
+    if val and #val > 0 then
+        return val
+    end
+    -- Fallback to legacy generic api_key if matching provider
+    local legacy = self:get("api_key", "")
+    if legacy and #legacy > 0 then
+        if prov == "groq" and legacy:sub(1, 4) == "gsk_" then return legacy end
+        if prov == "gemini" and legacy:sub(1, 4) == "AIza" then return legacy end
+        if prov == "openai" and legacy:sub(1, 3) == "sk-" then return legacy end
+        if prov == self:getProvider() then return legacy end
+    end
+    return ""
+end
+
+function Settings:setApiKey(key, prov)
+    prov = prov or self:getProvider()
+    self:save("api_key_" .. prov, key)
+    if prov == self:getProvider() then
+        self:save("api_key", key)
+    end
 end
 
 function Settings:getModel()
@@ -95,38 +123,87 @@ function Settings:saveCachedRecap(book_title, chapter_str, recap_text)
     self:save("cache_recaps", cache)
 end
 
--- Convenience helper: Import API key from /mnt/us/ai_key.txt or /mnt/us/groq_key.txt
+-- Import API keys from Kindle root (/mnt/us/) or KOReader data dir.
+-- Supports groq_key.txt, gemini_key.txt, openai_key.txt, and multi-line ai_key.txt
 function Settings:importKeyFromFile()
-    local candidate_paths = {
-        "/mnt/us/ai_key.txt",
-        "/mnt/us/groq_key.txt",
-        "/mnt/us/gemini_key.txt",
-        DataStorage:getFullDataDir() .. "/ai_key.txt",
+    local imported = {}
+    local files_found = {}
+
+    local specific_files = {
+        { path = "/mnt/us/groq_key.txt", prov = "groq" },
+        { path = DataStorage:getFullDataDir() .. "/groq_key.txt", prov = "groq" },
+        { path = "/mnt/us/gemini_key.txt", prov = "gemini" },
+        { path = DataStorage:getFullDataDir() .. "/gemini_key.txt", prov = "gemini" },
+        { path = "/mnt/us/openai_key.txt", prov = "openai" },
+        { path = DataStorage:getFullDataDir() .. "/openai_key.txt", prov = "openai" },
+        { path = "/mnt/us/deepseek_key.txt", prov = "deepseek" },
+        { path = DataStorage:getFullDataDir() .. "/deepseek_key.txt", prov = "deepseek" },
     }
 
-    for _, path in ipairs(candidate_paths) do
-        if lfs.attributes(path, "mode") == "file" then
-            local f = io.open(path, "r")
+    for idx, item in ipairs(specific_files) do
+        if lfs.attributes(item.path, "mode") == "file" then
+            local f = io.open(item.path, "r")
             if f then
                 local content = f:read("*a")
                 f:close()
                 if content and #content > 0 then
                     local clean_key = content:gsub("[\r\n%s]+", "")
                     if #clean_key > 5 then
-                        self:setApiKey(clean_key)
-                        -- Auto-detect Groq keys (start with gsk_)
-                        if clean_key:sub(1, 4) == "gsk_" then
-                            self:setProvider("groq")
-                        elseif clean_key:sub(1, 4) == "AIza" or path:find("gemini") then
-                            self:setProvider("gemini")
-                        end
-                        -- Remove temporary file for security
-                        pcall(os.remove, path)
-                        return true, path, clean_key
+                        self:setApiKey(clean_key, item.prov)
+                        imported[item.prov] = clean_key
+                        table.insert(files_found, item.path)
+                        pcall(os.remove, item.path)
                     end
                 end
             end
         end
+    end
+
+    local generic_files = {
+        "/mnt/us/ai_key.txt",
+        DataStorage:getFullDataDir() .. "/ai_key.txt",
+    }
+
+    for idx, path in ipairs(generic_files) do
+        if lfs.attributes(path, "mode") == "file" then
+            local f = io.open(path, "r")
+            if f then
+                local content = f:read("*a")
+                f:close()
+                if content and #content > 0 then
+                    table.insert(files_found, path)
+                    for line in content:gmatch("[^\r\n]+") do
+                        local clean = line:gsub("^%s+", ""):gsub("%s+$", "")
+                        local prov_match, key_match = clean:match("^([%a_]+)%s*=%s*(.+)$")
+                        if prov_match and key_match then
+                            prov_match = prov_match:lower()
+                            key_match = key_match:gsub("[\r\n%s]+", "")
+                            if #key_match > 5 then
+                                self:setApiKey(key_match, prov_match)
+                                imported[prov_match] = key_match
+                            end
+                        elseif #clean > 5 then
+                            local detected = detectProviderForKey(clean)
+                            if detected then
+                                self:setApiKey(clean, detected)
+                                imported[detected] = clean
+                            else
+                                local cur_prov = self:getProvider()
+                                self:setApiKey(clean, cur_prov)
+                                imported[cur_prov] = clean
+                            end
+                        end
+                    end
+                    pcall(os.remove, path)
+                end
+            end
+        end
+    end
+
+    local count = 0
+    for k, v in pairs(imported) do count = count + 1 end
+    if count > 0 then
+        return true, imported, files_found
     end
     return false, nil, nil
 end

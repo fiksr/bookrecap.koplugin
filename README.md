@@ -40,17 +40,22 @@ Ever put down an 800-page fantasy or sci-fi epic, come back after two weeks, and
 
 ---
 
-## 🔑 Setup & API Keys
+## 🔑 Setup & API Keys (Groq + Gemini Supported Simultaneously)
+
+BookRecap stores separate API keys for each provider, so you can configure **both** Groq and Gemini and switch between them anytime without re-typing.
 
 ### Option A: One-Tap File Import (Recommended for E-Ink)
 1. Connect your Kindle/Kobo to your PC via USB.
-2. Create a file named `ai_key.txt` in the root folder (`/mnt/us/ai_key.txt`).
-3. Paste your API key inside (e.g. from [console.groq.com](https://console.groq.com) or [aistudio.google.com](https://aistudio.google.com)).
-4. In KOReader, go to **Tools** ➔ **BookRecap** ➔ **📥 Import Key from /mnt/us/ai_key.txt**.
-5. The key is saved securely and the temporary file is deleted!
+2. In the root directory (`/mnt/us/`), you can create:
+   - `groq_key.txt` containing your Groq API key (`gsk_...` from [console.groq.com](https://console.groq.com))
+   - `gemini_key.txt` containing your Gemini API key (`AIza...` from [aistudio.google.com](https://aistudio.google.com))
+   *(Alternatively, use a single `ai_key.txt` with `groq=YOUR_KEY` and `gemini=YOUR_KEY` on separate lines)*
+3. In KOReader, open **Tools** ➔ **More tools** ➔ **BookRecap** ➔ **📥 Import API Keys from Kindle Storage**.
+4. Both keys are saved permanently to your KOReader settings, and the temporary files are securely deleted!
 
 ### Option B: On-Screen Keyboard
-- Go to **Tools** ➔ **BookRecap** ➔ **⌨️ Enter API Key Manually**.
+- Go to **Tools** ➔ **More tools** ➔ **BookRecap** ➔ **⌨️ [PROVIDER] Key**.
+- Type or edit the key specifically for the currently active provider.
 
 ---
 

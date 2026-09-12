@@ -183,18 +183,24 @@ function BookRecap:getSubMenuItems()
             end,
         },
         {
-            text = _("📥 Import Key from /mnt/us/ai_key.txt"),
+            text = _("📥 Import API Keys from Kindle Storage"),
             callback = function()
-                local ok, path, key = self.settings:importKeyFromFile()
+                local ok, imported, files = self.settings:importKeyFromFile()
                 if ok then
+                    local lines = { _("Keys imported successfully:") }
+                    for prov, key in pairs(imported) do
+                        local mask = #key > 8 and (key:sub(1, 4) .. "..." .. key:sub(-4)) or key
+                        table.insert(lines, string.format("• %s: %s", prov:upper(), mask))
+                    end
+                    table.insert(lines, "\n" .. _("You can switch between Groq and Gemini anytime!"))
                     UIManager:show(InfoMessage:new{
-                        text = string.format(_("API Key imported successfully from:\n%s\n(Provider set to %s)"), path, self.settings:getProvider():upper()),
-                        timeout = 4,
+                        text = table.concat(lines, "\n"),
+                        timeout = 6,
                     })
                 else
                     UIManager:show(InfoMessage:new{
-                        text = _("No ai_key.txt found on Kindle root (/mnt/us/ai_key.txt).\n\nCreate this file on your computer, paste your key, and tap this again!"),
-                        timeout = 6,
+                        text = _("No key files found on Kindle storage (/mnt/us/).\n\nYou can place any of these files via USB:\n• groq_key.txt (your Groq key)\n• gemini_key.txt (your Gemini key)\n• ai_key.txt (single key or groq=... / gemini=...)\n\nThen tap this button again!"),
+                        timeout = 8,
                     })
                 end
             end,
@@ -205,12 +211,12 @@ function BookRecap:getSubMenuItems()
             end,
             sub_item_table = {
                 {
-                    text = _("Groq (Free & Blazing Fast — Llama 3.3)"),
+                    text = _("Groq (Free & Blazing Fast)"),
                     checked_func = function() return self.settings:getProvider() == "groq" end,
                     callback = function() self.settings:setProvider("groq") end,
                 },
                 {
-                    text = _("Google Gemini (Free Tier — Gemini 1.5 Flash)"),
+                    text = _("Google Gemini"),
                     checked_func = function() return self.settings:getProvider() == "gemini" end,
                     callback = function() self.settings:setProvider("gemini") end,
                 },
@@ -232,15 +238,86 @@ function BookRecap:getSubMenuItems()
             },
         },
         {
-            text = _("⌨️ Enter API Key Manually"),
+            text_func = function()
+                return string.format(_("🧠 Model: %s"), self.settings:getModel())
+            end,
+            sub_item_table_func = function()
+                local prov = self.settings:getProvider()
+                if prov == "gemini" then
+                    return {
+                        {
+                            text = _("Gemini 3.5 Flash-Lite (500 RPD Free)"),
+                            checked_func = function() return self.settings:getModel() == "gemini-3.5-flash-lite" end,
+                            callback = function() self.settings:setModel("gemini-3.5-flash-lite") end,
+                        },
+                        {
+                            text = _("Gemini 2.5 Flash (20 RPD Free / Paid)"),
+                            checked_func = function() return self.settings:getModel() == "gemini-2.5-flash" end,
+                            callback = function() self.settings:setModel("gemini-2.5-flash") end,
+                        },
+                        {
+                            text = _("Gemini 3.8 Flash"),
+                            checked_func = function() return self.settings:getModel() == "gemini-3.8-flash" end,
+                            callback = function() self.settings:setModel("gemini-3.8-flash") end,
+                        },
+                        {
+                            text = _("Gemini 3.7 Flash"),
+                            checked_func = function() return self.settings:getModel() == "gemini-3.7-flash" end,
+                            callback = function() self.settings:setModel("gemini-3.7-flash") end,
+                        },
+                        {
+                            text = _("Gemini 3.6 Flash"),
+                            checked_func = function() return self.settings:getModel() == "gemini-3.6-flash" end,
+                            callback = function() self.settings:setModel("gemini-3.6-flash") end,
+                        },
+                    }
+                elseif prov == "groq" then
+                    return {
+                        {
+                            text = _("GPT-OSS 120B (Recommended — 1K RPD, Best Quality)"),
+                            checked_func = function() return self.settings:getModel() == "openai/gpt-oss-120b" end,
+                            callback = function() self.settings:setModel("openai/gpt-oss-120b") end,
+                        },
+                        {
+                            text = _("Qwen 3.8 27B (1K RPD — Strong Reasoning)"),
+                            checked_func = function() return self.settings:getModel() == "qwen/qwen3.8-27b" end,
+                            callback = function() self.settings:setModel("qwen/qwen3.8-27b") end,
+                        },
+                        {
+                            text = _("GPT-OSS 20B (1K RPD — Fast & Lightweight)"),
+                            checked_func = function() return self.settings:getModel() == "openai/gpt-oss-20b" end,
+                            callback = function() self.settings:setModel("openai/gpt-oss-20b") end,
+                        },
+                        {
+                            text = _("Groq Compound (250 RPD)"),
+                            checked_func = function() return self.settings:getModel() == "groq/compound" end,
+                            callback = function() self.settings:setModel("groq/compound") end,
+                        },
+                    }
+                end
+                return {
+                    {
+                        text = string.format(_("Current: %s"), self.settings:getModel()),
+                        enabled = false,
+                    },
+                }
+            end,
+        },
+        {
+            text_func = function()
+                local prov = self.settings:getProvider()
+                local cur_key = self.settings:getApiKey(prov)
+                local status = (#cur_key > 0) and _("✓ configured") or _("✗ not set")
+                return string.format(_("⌨️ %s Key (%s)"), prov:upper(), status)
+            end,
             callback = function()
-                local cur_key = self.settings:getApiKey()
-                local mask = #cur_key > 8 and (cur_key:sub(1, 4) .. "..." .. cur_key:sub(-4)) or cur_key
+                local prov = self.settings:getProvider()
+                local cur_key = self.settings:getApiKey(prov)
                 local dialog
                 dialog = InputDialog:new{
-                    title = _("Enter AI Provider API Key"),
+                    title = string.format(_("Enter %s API Key"), prov:upper()),
                     input = cur_key,
-                    input_hint = _("e.g. gsk_... or AIzaSy..."),
+                    input_hint = prov == "groq" and "gsk_..." or (prov == "gemini" and "AIza..." or "API Key"),
                     buttons = {
                         {
                             {
@@ -253,9 +330,12 @@ function BookRecap:getSubMenuItems()
                                 is_enter_default = true,
                                 callback = function()
                                     local val = dialog:getInputText():gsub("[\r\n%s]+", "")
-                                    self.settings:setApiKey(val)
+                                    self.settings:setApiKey(val, prov)
                                     UIManager:close(dialog)
-                                    UIManager:show(InfoMessage:new{ text = _("API Key saved!"), timeout = 2 })
+                                    UIManager:show(InfoMessage:new{
+                                        text = string.format(_("%s Key saved!"), prov:upper()),
+                                        timeout = 2,
+                                    })
                                 end,
                             },
                         },

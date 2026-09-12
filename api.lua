@@ -33,7 +33,7 @@ local function encodeJSON(val)
         local is_array = (#val > 0)
         local parts = {}
         if is_array then
-            for _, v in ipairs(val) do
+            for idx, v in ipairs(val) do
                 table.insert(parts, encodeJSON(v))
             end
             return "[" .. table.concat(parts, ",") .. "]"
@@ -63,11 +63,11 @@ end
 
 function API:sendChat(messages, system_prompt)
     local provider = self.settings:getProvider()
-    local api_key = self.settings:getApiKey()
+    local api_key = self.settings:getApiKey(provider)
     local model = self.settings:getModel()
 
     if provider ~= "ollama" and #api_key == 0 then
-        return nil, "API key is not set. Please enter your key or place ai_key.txt on your Kindle."
+        return nil, string.format("API key for %s is not set. Go to Tools ➔ More tools ➔ BookRecap to enter it, or place %s_key.txt on your Kindle.", provider:upper(), provider)
     end
 
     local url
@@ -78,7 +78,7 @@ function API:sendChat(messages, system_prompt)
     if system_prompt and #system_prompt > 0 then
         table.insert(all_messages, { role = "system", content = system_prompt })
     end
-    for _, m in ipairs(messages) do
+    for idx, m in ipairs(messages) do
         table.insert(all_messages, m)
     end
 
@@ -132,7 +132,7 @@ function API:sendChat(messages, system_prompt)
     local safe_body = body_str:gsub("'", "'\\''")
 
     local header_args = ""
-    for _, h in ipairs(headers) do
+    for idx, h in ipairs(headers) do
         header_args = header_args .. string.format(' -H "%s"', h)
     end
 
@@ -186,6 +186,7 @@ STRICT CRITICAL RULES:
 2. Only summarize established facts, key relationships, and events up to the stated chapter/page.
 3. Be concise: provide 3 to 4 clear, high-impact bullet points.
 4. If you are unsure of the exact timeline, stay broad and focus on the main premise without making up future events.
+5. LANGUAGE: Always respond in the same language as the book (e.g. if the book title or text is in Serbian/Croatian/Bosnian, reply in natural Serbian; if English, reply in English).
 ]]
 
     local user_prompt = string.format(
@@ -213,6 +214,7 @@ STRICT CRITICAL RULES:
 1. Give a 2 to 3 sentence spoiler-free description of who this character is and their primary role/allegiance UP TO the specified chapter.
 2. DO NOT reveal any upcoming betrayals, secret identities, deaths, or twists.
 3. If this character was only just introduced, simply state what their initial role appears to be.
+4. LANGUAGE: Always respond in the same language as the book (e.g. if the book title or text is in Serbian/Croatian/Bosnian, reply in natural Serbian; if English, reply in English).
 ]]
 
     local user_prompt = string.format(
