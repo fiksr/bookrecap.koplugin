@@ -72,8 +72,8 @@ function BookRecap:getBookContext()
 end
 
 function BookRecap:addToHighlightDialog()
-    -- Add "Who is this?" into highlight dialog
-    self.ui.highlight:addToHighlightDialog("11_who_is_this", function(this)
+    -- 01_who_is_this places our button right at the top of the highlight action popup
+    self.ui.highlight:addToHighlightDialog("01_who_is_this", function(this)
         return {
             text = _("Who is this?"),
             callback = function()
@@ -151,7 +151,6 @@ end
 function BookRecap:addToMainMenu(menu_items)
     menu_items.bookrecap = {
         text = _("BookRecap"),
-        sorting_hint = "more_tools",
         sub_item_table = self:getSubMenuItems(),
     }
 end
