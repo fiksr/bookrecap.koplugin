@@ -117,6 +117,8 @@ function Settings:importKeyFromFile()
                         -- Auto-detect Groq keys (start with gsk_)
                         if clean_key:sub(1, 4) == "gsk_" then
                             self:setProvider("groq")
+                        elseif clean_key:sub(1, 4) == "AIza" or path:find("gemini") then
+                            self:setProvider("gemini")
                         end
                         -- Remove temporary file for security
                         pcall(os.remove, path)
