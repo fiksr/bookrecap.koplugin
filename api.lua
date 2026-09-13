@@ -25,11 +25,11 @@ local function encodeJSON(val)
         return json.encode(val)
     end
     -- Fallback basic JSON encoder for standard payloads
-    if type(val) == "string"then
+    if type(val) == "string" then
         return string.format('"%s"', val:gsub('\\', '\\\\'):gsub('"', '\\"'):gsub('\n', '\\n'):gsub('\r', ''))
-    elseif type(val) == "number"or type(val) == "boolean"then
+    elseif type(val) == "number" or type(val) == "boolean" then
         return tostring(val)
-    elseif type(val) == "table"then
+    elseif type(val) == "table" then
         local is_array = (#val > 0)
         local parts = {}
         if is_array then
@@ -66,7 +66,7 @@ function API:sendChat(messages, system_prompt)
     local api_key = self.settings:getApiKey(provider)
     local model = self.settings:getModel()
 
-    if provider ~= "ollama"and #api_key == 0 then
+    if provider ~= "ollama" and #api_key == 0 then
         return nil, string.format("API key for %s is not set. Go to Tools  More tools  BookRecap to enter it, or place %s_key.txt on your Kindle.", provider:upper(), provider)
     end
 
@@ -82,7 +82,7 @@ function API:sendChat(messages, system_prompt)
         table.insert(all_messages, m)
     end
 
-    if provider == "groq"then
+    if provider == "groq" then
         url = "https://api.groq.com/openai/v1/chat/completions"
         table.insert(headers, "Authorization: Bearer ".. api_key)
         payload = {
@@ -91,7 +91,7 @@ function API:sendChat(messages, system_prompt)
             temperature = 0.3,
             max_tokens = 600,
         }
-    elseif provider == "gemini"then
+    elseif provider == "gemini" then
         url = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
         table.insert(headers, "Authorization: Bearer ".. api_key)
         payload = {
@@ -100,7 +100,7 @@ function API:sendChat(messages, system_prompt)
             temperature = 0.3,
             max_tokens = 600,
         }
-    elseif provider == "openai"then
+    elseif provider == "openai" then
         url = "https://api.openai.com/v1/chat/completions"
         table.insert(headers, "Authorization: Bearer ".. api_key)
         payload = {
@@ -109,7 +109,7 @@ function API:sendChat(messages, system_prompt)
             temperature = 0.3,
             max_tokens = 600,
         }
-    elseif provider == "deepseek"then
+    elseif provider == "deepseek" then
         url = "https://api.deepseek.com/v1/chat/completions"
         table.insert(headers, "Authorization: Bearer ".. api_key)
         payload = {
@@ -118,15 +118,14 @@ function API:sendChat(messages, system_prompt)
             temperature = 0.3,
             max_tokens = 600,
         }
-    elseif provider == "ollama"then
+    elseif provider == "ollama" then
         local base = self.settings:getOllamaUrl():gsub("/+$", "")
         url = base .. "/api/chat"
         payload = {
             model = model,
             messages = all_messages,
             stream = false,
-        }
-    end
+        } end
 
     local body_str = encodeJSON(payload)
     local safe_body = body_str:gsub("'", "'\\''")
@@ -159,7 +158,7 @@ function API:sendChat(messages, system_prompt)
     end
 
     if res.error then
-        local msg = (type(res.error) == "table"and res.error.message) or tostring(res.error)
+        local msg = (type(res.error) == "table" and res.error.message) or tostring(res.error)
         return nil, "API Error: ".. msg
     end
 

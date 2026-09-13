@@ -43,11 +43,11 @@ function Settings:setProvider(p)
 end
 
 local function detectProviderForKey(key)
-    if key:sub(1, 4) == "gsk_"then
+    if key:sub(1, 4) == "gsk_" then
         return "groq"
-    elseif key:sub(1, 4) == "AIza"then
+    elseif key:sub(1, 4) == "AIza" then
         return "gemini"
-    elseif key:sub(1, 3) == "sk-"then
+    elseif key:sub(1, 3) == "sk-" then
         return "openai"
     end
     return nil
@@ -62,9 +62,9 @@ function Settings:getApiKey(prov)
     -- Fallback to legacy generic api_key if matching provider
     local legacy = self:get("api_key", "")
     if legacy and #legacy > 0 then
-        if prov == "groq"and legacy:sub(1, 4) == "gsk_"then return legacy end
-        if prov == "gemini"and legacy:sub(1, 4) == "AIza"then return legacy end
-        if prov == "openai"and legacy:sub(1, 3) == "sk-"then return legacy end
+        if prov == "groq" and legacy:sub(1, 4) == "gsk_" then return legacy end
+        if prov == "gemini" and legacy:sub(1, 4) == "AIza" then return legacy end
+        if prov == "openai" and legacy:sub(1, 3) == "sk-" then return legacy end
         if prov == self:getProvider() then return legacy end
     end
     return ""
@@ -141,7 +141,7 @@ function Settings:importKeyFromFile()
     }
 
     for idx, item in ipairs(specific_files) do
-        if lfs.attributes(item.path, "mode") == "file"then
+        if lfs.attributes(item.path, "mode") == "file" then
             local f = io.open(item.path, "r")
             if f then
                 local content = f:read("*a")
@@ -165,7 +165,7 @@ function Settings:importKeyFromFile()
     }
 
     for idx, path in ipairs(generic_files) do
-        if lfs.attributes(path, "mode") == "file"then
+        if lfs.attributes(path, "mode") == "file" then
             local f = io.open(path, "r")
             if f then
                 local content = f:read("*a")
