@@ -4,6 +4,7 @@ Provides spoiler-free narrative recaps and character identification directly wit
 --]]--
 
 local Device = require("device")
+local Dispatcher = require("dispatcher")
 local InfoMessage = require("ui/widget/infomessage")
 local InputDialog = require("ui/widget/inputdialog")
 local UIManager = require("ui/uimanager")
@@ -35,9 +36,24 @@ local BookRecap = WidgetContainer:extend{
     is_doc_only = false,
 }
 
+
+function BookRecap:onDispatcherRegisterActions()
+    Dispatcher:registerAction("bookrecap", {
+        category = "none",
+        event = "ShowBookRecap",
+        title = _("Book Recap"),
+        general = true,
+    })
+end
+
+function BookRecap:onShowBookRecap()
+    self:onShowRecap()
+end
+
 function BookRecap:init()
     self.settings = Settings:new()
     self.api = API:new(self.settings)
+    self:onDispatcherRegisterActions()
 
     -- Hook into the Reader's highlight dialog for character lookups
     if self.ui and self.ui.highlight then
