@@ -41,7 +41,7 @@ function BookRecap:onDispatcherRegisterActions()
     Dispatcher:registerAction("bookrecap", {
         category = "none",
         event = "ShowBookRecap",
-        title = _("Book Recap"),
+        title = _("📚 Book Recap"),
         general = true,
     })
 end
