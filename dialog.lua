@@ -25,9 +25,9 @@ function Dialog.closeLoading(info_widget)
 end
 
 function Dialog.showRecap(book_title, chapter_str, recap_text)
-    local title = string.format(_("📖 Story Recap: %s"), book_title)
+    local title = string.format(_("Story Recap: %s"), book_title)
     local full_text = string.format(
-        "📍 Current Progress: %s\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n%s\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n⚠️ Strictly spoiler-guarded up to this point.",
+        "Current Progress: %s\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n%s\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n️ Strictly spoiler-guarded up to this point.",
         chapter_str or "Current Reading Point",
         recap_text
     )
@@ -41,9 +41,9 @@ function Dialog.showRecap(book_title, chapter_str, recap_text)
 end
 
 function Dialog.showCharacter(char_name, book_title, chapter_str, bio_text)
-    local title = string.format(_("👤 Character Guide: %s"), char_name)
+    local title = string.format(_("Character Guide: %s"), char_name)
     local full_text = string.format(
-        "📖 Book: %s\n📍 Location: %s\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n%s\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n⚠️ Strictly spoiler-guarded up to this chapter.",
+        "Book: %s\n Location: %s\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n%s\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n️ Strictly spoiler-guarded up to this chapter.",
         book_title or "Current Book",
         chapter_str or "Current Chapter",
         bio_text

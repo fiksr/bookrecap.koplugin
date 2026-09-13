@@ -25,23 +25,23 @@ local function encodeJSON(val)
         return json.encode(val)
     end
     -- Fallback basic JSON encoder for standard payloads
-    if type(val) == "string" then
+    if type(val) == "string"then
         return string.format('"%s"', val:gsub('\\', '\\\\'):gsub('"', '\\"'):gsub('\n', '\\n'):gsub('\r', ''))
-    elseif type(val) == "number" or type(val) == "boolean" then
+    elseif type(val) == "number"or type(val) == "boolean"then
         return tostring(val)
-    elseif type(val) == "table" then
+    elseif type(val) == "table"then
         local is_array = (#val > 0)
         local parts = {}
         if is_array then
             for idx, v in ipairs(val) do
                 table.insert(parts, encodeJSON(v))
             end
-            return "[" .. table.concat(parts, ",") .. "]"
+            return "[".. table.concat(parts, ",") .. "]"
         else
             for k, v in pairs(val) do
                 table.insert(parts, string.format('"%s":%s', k, encodeJSON(v)))
             end
-            return "{" .. table.concat(parts, ",") .. "}"
+            return "{".. table.concat(parts, ",") .. "}"
         end
     end
     return "null"
@@ -66,8 +66,8 @@ function API:sendChat(messages, system_prompt)
     local api_key = self.settings:getApiKey(provider)
     local model = self.settings:getModel()
 
-    if provider ~= "ollama" and #api_key == 0 then
-        return nil, string.format("API key for %s is not set. Go to Tools ➔ More tools ➔ BookRecap to enter it, or place %s_key.txt on your Kindle.", provider:upper(), provider)
+    if provider ~= "ollama"and #api_key == 0 then
+        return nil, string.format("API key for %s is not set. Go to Tools  More tools  BookRecap to enter it, or place %s_key.txt on your Kindle.", provider:upper(), provider)
     end
 
     local url
@@ -82,43 +82,43 @@ function API:sendChat(messages, system_prompt)
         table.insert(all_messages, m)
     end
 
-    if provider == "groq" then
+    if provider == "groq"then
         url = "https://api.groq.com/openai/v1/chat/completions"
-        table.insert(headers, "Authorization: Bearer " .. api_key)
+        table.insert(headers, "Authorization: Bearer ".. api_key)
         payload = {
             model = model,
             messages = all_messages,
             temperature = 0.3,
             max_tokens = 600,
         }
-    elseif provider == "gemini" then
+    elseif provider == "gemini"then
         url = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
-        table.insert(headers, "Authorization: Bearer " .. api_key)
+        table.insert(headers, "Authorization: Bearer ".. api_key)
         payload = {
             model = model,
             messages = all_messages,
             temperature = 0.3,
             max_tokens = 600,
         }
-    elseif provider == "openai" then
+    elseif provider == "openai"then
         url = "https://api.openai.com/v1/chat/completions"
-        table.insert(headers, "Authorization: Bearer " .. api_key)
+        table.insert(headers, "Authorization: Bearer ".. api_key)
         payload = {
             model = model,
             messages = all_messages,
             temperature = 0.3,
             max_tokens = 600,
         }
-    elseif provider == "deepseek" then
+    elseif provider == "deepseek"then
         url = "https://api.deepseek.com/v1/chat/completions"
-        table.insert(headers, "Authorization: Bearer " .. api_key)
+        table.insert(headers, "Authorization: Bearer ".. api_key)
         payload = {
             model = model,
             messages = all_messages,
             temperature = 0.3,
             max_tokens = 600,
         }
-    elseif provider == "ollama" then
+    elseif provider == "ollama"then
         local base = self.settings:getOllamaUrl():gsub("/+$", "")
         url = base .. "/api/chat"
         payload = {
@@ -155,12 +155,12 @@ function API:sendChat(messages, system_prompt)
 
     local res = decodeJSON(raw)
     if not res then
-        return nil, "Invalid response from server:\n" .. raw:sub(1, 200)
+        return nil, "Invalid response from server:\n".. raw:sub(1, 200)
     end
 
     if res.error then
-        local msg = (type(res.error) == "table" and res.error.message) or tostring(res.error)
-        return nil, "API Error: " .. msg
+        local msg = (type(res.error) == "table"and res.error.message) or tostring(res.error)
+        return nil, "API Error: ".. msg
     end
 
     -- OpenAI / Groq / Gemini / DeepSeek response format
@@ -173,7 +173,7 @@ function API:sendChat(messages, system_prompt)
         return res.message.content
     end
 
-    return nil, "Unexpected response format:\n" .. raw:sub(1, 200)
+    return nil, "Unexpected response format:\n".. raw:sub(1, 200)
 end
 
 -- Generate a strictly spoiler-guarded narrative recap
@@ -193,13 +193,13 @@ STRICT CRITICAL RULES:
         "I am reading '%s' by %s.\nI have currently reached %s (Page %d of %d).\n\nPlease give me a 3 to 4 bullet-point recap of the story developments up to this moment so I can jump back into reading with full context.",
         book_title or "Untitled",
         book_author or "Unknown Author",
-        chapter_title or ("Page " .. tostring(cur_page)),
+        chapter_title or ("Page ".. tostring(cur_page)),
         cur_page or 1,
         total_pages or 1
     )
 
     if sample_text and #sample_text > 0 then
-        user_prompt = user_prompt .. "\n\nExcerpt from where I left off:\n\"" .. sample_text:sub(1, 400) .. "\""
+        user_prompt = user_prompt .. "\n\nExcerpt from where I left off:\n\"".. sample_text:sub(1, 400) .. "\""
     end
 
     return self:sendChat({ { role = "user", content = user_prompt } }, system_prompt)

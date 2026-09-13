@@ -41,7 +41,7 @@ function BookRecap:onDispatcherRegisterActions()
     Dispatcher:registerAction("bookrecap", {
         category = "none",
         event = "ShowBookRecap",
-        title = _("📚 Book Recap"),
+        title = _("Book Recap"),
         general = true,
     })
 end
@@ -77,7 +77,7 @@ function BookRecap:getBookContext()
     local t_part, a_part = title:match("^(.-)%s+[%-–—]%s+(.+)$")
     if t_part and a_part and #t_part > 0 and #a_part > 0 then
         title = t_part
-        if not author or author == "Unknown Author" or #author == 0 then
+        if not author or author == "Unknown Author"or #author == 0 then
             author = a_part
         end
     end
@@ -86,7 +86,7 @@ function BookRecap:getBookContext()
     if self.ui and self.ui.toc and self.ui.toc.getTocTitleOfCurrentPage then
         local ok_ct, ct = pcall(function() return self.ui.toc:getTocTitleOfCurrentPage() end)
         if ok_ct and ct and #ct > 0 then
-            chapter_title = ct:gsub("[\r\n]+", " "):gsub("^%s+", ""):gsub("%s+$", "")
+            chapter_title = ct:gsub("[\r\n]+", ""):gsub("^%s+", ""):gsub("%s+$", "")
         end
     end
 
@@ -109,7 +109,7 @@ function BookRecap:addToHighlightDialog()
                 this:highlightFromHoldPos()
                 if not (this.selected_text and this.selected_text.text) then return end
 
-                local char_name = util.cleanupSelectedText(this.selected_text.text):gsub("[\r\n]+", " "):gsub("^%s+", ""):gsub("%s+$", "")
+                local char_name = util.cleanupSelectedText(this.selected_text.text):gsub("[\r\n]+", ""):gsub("^%s+", ""):gsub("%s+$", "")
                 if #char_name == 0 then return end
                 this:onClose(true)
 
@@ -126,7 +126,7 @@ function BookRecap:onIdentifyCharacter(char_name)
     -- Check offline cache first
     local cached = self.settings:getCachedCharacter(title, char_name)
     if cached and #cached > 0 then
-        Dialog.showCharacter(char_name, title, location_str .. " (Offline Cache)", cached)
+        Dialog.showCharacter(char_name, title, location_str .. "(Offline Cache)", cached)
         return
     end
 
@@ -155,7 +155,7 @@ function BookRecap:onCatchMeUp()
 
     local cached = self.settings:getCachedRecap(title, location_str)
     if cached and #cached > 0 then
-        Dialog.showRecap(title, location_str .. " (Offline Cache)", cached)
+        Dialog.showRecap(title, location_str .. "(Offline Cache)", cached)
         return
     end
 
@@ -192,23 +192,23 @@ function BookRecap:getSubMenuItems()
     local prov = self.settings:getProvider()
     return {
         {
-            text = _("📖 Catch Me Up (Spoiler-Free Recap)"),
+            text = _("Catch Me Up (Spoiler-Free Recap)"),
             enabled = self.ui and self.ui.document and true or false,
             callback = function()
                 self:onCatchMeUp()
             end,
         },
         {
-            text = _("📥 Import API Keys from Kindle Storage"),
+            text = _("Import API Keys from Kindle Storage"),
             callback = function()
                 local ok, imported, files = self.settings:importKeyFromFile()
                 if ok then
                     local lines = { _("Keys imported successfully:") }
                     for prov, key in pairs(imported) do
-                        local mask = #key > 8 and (key:sub(1, 4) .. "..." .. key:sub(-4)) or key
+                        local mask = #key > 8 and (key:sub(1, 4) .. "...".. key:sub(-4)) or key
                         table.insert(lines, string.format("• %s: %s", prov:upper(), mask))
                     end
-                    table.insert(lines, "\n" .. _("You can switch between Groq and Gemini anytime!"))
+                    table.insert(lines, "\n".. _("You can switch between Groq and Gemini anytime!"))
                     UIManager:show(InfoMessage:new{
                         text = table.concat(lines, "\n"),
                         timeout = 6,
@@ -223,90 +223,90 @@ function BookRecap:getSubMenuItems()
         },
         {
             text_func = function()
-                return string.format(_("🤖 Provider: %s (%s)"), self.settings:getProvider():upper(), self.settings:getModel())
+                return string.format(_("Provider: %s (%s)"), self.settings:getProvider():upper(), self.settings:getModel())
             end,
             sub_item_table = {
                 {
                     text = _("Groq (Free & Blazing Fast)"),
-                    checked_func = function() return self.settings:getProvider() == "groq" end,
+                    checked_func = function() return self.settings:getProvider() == "groq"end,
                     callback = function() self.settings:setProvider("groq") end,
                 },
                 {
                     text = _("Google Gemini"),
-                    checked_func = function() return self.settings:getProvider() == "gemini" end,
+                    checked_func = function() return self.settings:getProvider() == "gemini"end,
                     callback = function() self.settings:setProvider("gemini") end,
                 },
                 {
                     text = _("OpenAI (GPT-4o-mini)"),
-                    checked_func = function() return self.settings:getProvider() == "openai" end,
+                    checked_func = function() return self.settings:getProvider() == "openai"end,
                     callback = function() self.settings:setProvider("openai") end,
                 },
                 {
                     text = _("DeepSeek (DeepSeek Chat)"),
-                    checked_func = function() return self.settings:getProvider() == "deepseek" end,
+                    checked_func = function() return self.settings:getProvider() == "deepseek"end,
                     callback = function() self.settings:setProvider("deepseek") end,
                 },
                 {
                     text = _("Local Ollama (100% Offline via LAN)"),
-                    checked_func = function() return self.settings:getProvider() == "ollama" end,
+                    checked_func = function() return self.settings:getProvider() == "ollama"end,
                     callback = function() self.settings:setProvider("ollama") end,
                 },
             },
         },
         {
             text_func = function()
-                return string.format(_("🧠 Model: %s"), self.settings:getModel())
+                return string.format(_("Model: %s"), self.settings:getModel())
             end,
             sub_item_table_func = function()
                 local prov = self.settings:getProvider()
-                if prov == "gemini" then
+                if prov == "gemini"then
                     return {
                         {
                             text = _("Gemini 3.5 Flash-Lite (500 RPD Free)"),
-                            checked_func = function() return self.settings:getModel() == "gemini-3.5-flash-lite" end,
+                            checked_func = function() return self.settings:getModel() == "gemini-3.5-flash-lite"end,
                             callback = function() self.settings:setModel("gemini-3.5-flash-lite") end,
                         },
                         {
                             text = _("Gemini 2.5 Flash (20 RPD Free / Paid)"),
-                            checked_func = function() return self.settings:getModel() == "gemini-2.5-flash" end,
+                            checked_func = function() return self.settings:getModel() == "gemini-2.5-flash"end,
                             callback = function() self.settings:setModel("gemini-2.5-flash") end,
                         },
                         {
                             text = _("Gemini 3.8 Flash"),
-                            checked_func = function() return self.settings:getModel() == "gemini-3.8-flash" end,
+                            checked_func = function() return self.settings:getModel() == "gemini-3.8-flash"end,
                             callback = function() self.settings:setModel("gemini-3.8-flash") end,
                         },
                         {
                             text = _("Gemini 3.7 Flash"),
-                            checked_func = function() return self.settings:getModel() == "gemini-3.7-flash" end,
+                            checked_func = function() return self.settings:getModel() == "gemini-3.7-flash"end,
                             callback = function() self.settings:setModel("gemini-3.7-flash") end,
                         },
                         {
                             text = _("Gemini 3.6 Flash"),
-                            checked_func = function() return self.settings:getModel() == "gemini-3.6-flash" end,
+                            checked_func = function() return self.settings:getModel() == "gemini-3.6-flash"end,
                             callback = function() self.settings:setModel("gemini-3.6-flash") end,
                         },
                     }
-                elseif prov == "groq" then
+                elseif prov == "groq"then
                     return {
                         {
                             text = _("GPT-OSS 120B (Recommended — 1K RPD, Best Quality)"),
-                            checked_func = function() return self.settings:getModel() == "openai/gpt-oss-120b" end,
+                            checked_func = function() return self.settings:getModel() == "openai/gpt-oss-120b"end,
                             callback = function() self.settings:setModel("openai/gpt-oss-120b") end,
                         },
                         {
                             text = _("Qwen 3.8 27B (1K RPD — Strong Reasoning)"),
-                            checked_func = function() return self.settings:getModel() == "qwen/qwen3.8-27b" end,
+                            checked_func = function() return self.settings:getModel() == "qwen/qwen3.8-27b"end,
                             callback = function() self.settings:setModel("qwen/qwen3.8-27b") end,
                         },
                         {
                             text = _("GPT-OSS 20B (1K RPD — Fast & Lightweight)"),
-                            checked_func = function() return self.settings:getModel() == "openai/gpt-oss-20b" end,
+                            checked_func = function() return self.settings:getModel() == "openai/gpt-oss-20b"end,
                             callback = function() self.settings:setModel("openai/gpt-oss-20b") end,
                         },
                         {
                             text = _("Groq Compound (250 RPD)"),
-                            checked_func = function() return self.settings:getModel() == "groq/compound" end,
+                            checked_func = function() return self.settings:getModel() == "groq/compound"end,
                             callback = function() self.settings:setModel("groq/compound") end,
                         },
                     }
@@ -323,8 +323,8 @@ function BookRecap:getSubMenuItems()
             text_func = function()
                 local prov = self.settings:getProvider()
                 local cur_key = self.settings:getApiKey(prov)
-                local status = (#cur_key > 0) and _("✓ configured") or _("✗ not set")
-                return string.format(_("⌨️ %s Key (%s)"), prov:upper(), status)
+                local status = (#cur_key > 0) and _("configured") or _("not set")
+                return string.format(_("️ %s Key (%s)"), prov:upper(), status)
             end,
             callback = function()
                 local prov = self.settings:getProvider()
@@ -333,7 +333,7 @@ function BookRecap:getSubMenuItems()
                 dialog = InputDialog:new{
                     title = string.format(_("Enter %s API Key"), prov:upper()),
                     input = cur_key,
-                    input_hint = prov == "groq" and "gsk_..." or (prov == "gemini" and "AIza..." or "API Key"),
+                    input_hint = prov == "groq"and "gsk_..."or (prov == "gemini"and "AIza..."or "API Key"),
                     buttons = {
                         {
                             {
@@ -362,7 +362,7 @@ function BookRecap:getSubMenuItems()
             end,
         },
         {
-            text = _("🧹 Clear Offline Cache"),
+            text = _("Clear Offline Cache"),
             callback = function()
                 self.settings:save("cache_characters", {})
                 self.settings:save("cache_recaps", {})

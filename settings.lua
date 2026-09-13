@@ -24,14 +24,14 @@ end
 
 function Settings:get(key, default)
     if not G_reader_settings then return default end
-    local val = G_reader_settings:readSetting("bookrecap_" .. key)
+    local val = G_reader_settings:readSetting("bookrecap_".. key)
     if val ~= nil then return val end
     return default
 end
 
 function Settings:save(key, val)
     if not G_reader_settings then return end
-    G_reader_settings:saveSetting("bookrecap_" .. key, val)
+    G_reader_settings:saveSetting("bookrecap_".. key, val)
 end
 
 function Settings:getProvider()
@@ -43,11 +43,11 @@ function Settings:setProvider(p)
 end
 
 local function detectProviderForKey(key)
-    if key:sub(1, 4) == "gsk_" then
+    if key:sub(1, 4) == "gsk_"then
         return "groq"
-    elseif key:sub(1, 4) == "AIza" then
+    elseif key:sub(1, 4) == "AIza"then
         return "gemini"
-    elseif key:sub(1, 3) == "sk-" then
+    elseif key:sub(1, 3) == "sk-"then
         return "openai"
     end
     return nil
@@ -55,16 +55,16 @@ end
 
 function Settings:getApiKey(prov)
     prov = prov or self:getProvider()
-    local val = self:get("api_key_" .. prov, "")
+    local val = self:get("api_key_".. prov, "")
     if val and #val > 0 then
         return val
     end
     -- Fallback to legacy generic api_key if matching provider
     local legacy = self:get("api_key", "")
     if legacy and #legacy > 0 then
-        if prov == "groq" and legacy:sub(1, 4) == "gsk_" then return legacy end
-        if prov == "gemini" and legacy:sub(1, 4) == "AIza" then return legacy end
-        if prov == "openai" and legacy:sub(1, 3) == "sk-" then return legacy end
+        if prov == "groq"and legacy:sub(1, 4) == "gsk_"then return legacy end
+        if prov == "gemini"and legacy:sub(1, 4) == "AIza"then return legacy end
+        if prov == "openai"and legacy:sub(1, 3) == "sk-"then return legacy end
         if prov == self:getProvider() then return legacy end
     end
     return ""
@@ -72,7 +72,7 @@ end
 
 function Settings:setApiKey(key, prov)
     prov = prov or self:getProvider()
-    self:save("api_key_" .. prov, key)
+    self:save("api_key_".. prov, key)
     if prov == self:getProvider() then
         self:save("api_key", key)
     end
@@ -80,12 +80,12 @@ end
 
 function Settings:getModel()
     local prov = self:getProvider()
-    return self:get("model_" .. prov, DEFAULT_MODELS[prov] or "llama-3.3-70b-versatile")
+    return self:get("model_".. prov, DEFAULT_MODELS[prov] or "llama-3.3-70b-versatile")
 end
 
 function Settings:setModel(m)
     local prov = self:getProvider()
-    self:save("model_" .. prov, m)
+    self:save("model_".. prov, m)
 end
 
 function Settings:getOllamaUrl()
@@ -130,18 +130,18 @@ function Settings:importKeyFromFile()
     local files_found = {}
 
     local specific_files = {
-        { path = "/mnt/us/groq_key.txt", prov = "groq" },
-        { path = DataStorage:getFullDataDir() .. "/groq_key.txt", prov = "groq" },
-        { path = "/mnt/us/gemini_key.txt", prov = "gemini" },
-        { path = DataStorage:getFullDataDir() .. "/gemini_key.txt", prov = "gemini" },
-        { path = "/mnt/us/openai_key.txt", prov = "openai" },
-        { path = DataStorage:getFullDataDir() .. "/openai_key.txt", prov = "openai" },
-        { path = "/mnt/us/deepseek_key.txt", prov = "deepseek" },
-        { path = DataStorage:getFullDataDir() .. "/deepseek_key.txt", prov = "deepseek" },
+        { path = "/mnt/us/groq_key.txt", prov = "groq"},
+        { path = DataStorage:getFullDataDir() .. "/groq_key.txt", prov = "groq"},
+        { path = "/mnt/us/gemini_key.txt", prov = "gemini"},
+        { path = DataStorage:getFullDataDir() .. "/gemini_key.txt", prov = "gemini"},
+        { path = "/mnt/us/openai_key.txt", prov = "openai"},
+        { path = DataStorage:getFullDataDir() .. "/openai_key.txt", prov = "openai"},
+        { path = "/mnt/us/deepseek_key.txt", prov = "deepseek"},
+        { path = DataStorage:getFullDataDir() .. "/deepseek_key.txt", prov = "deepseek"},
     }
 
     for idx, item in ipairs(specific_files) do
-        if lfs.attributes(item.path, "mode") == "file" then
+        if lfs.attributes(item.path, "mode") == "file"then
             local f = io.open(item.path, "r")
             if f then
                 local content = f:read("*a")
@@ -165,7 +165,7 @@ function Settings:importKeyFromFile()
     }
 
     for idx, path in ipairs(generic_files) do
-        if lfs.attributes(path, "mode") == "file" then
+        if lfs.attributes(path, "mode") == "file"then
             local f = io.open(path, "r")
             if f then
                 local content = f:read("*a")
