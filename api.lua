@@ -97,7 +97,6 @@ function API:sendChat(messages, system_prompt)
         payload = {
             model = model,
             messages = all_messages,
-            temperature = 0.3,
             max_tokens = 600,
         }
     elseif provider == "openai" then
